@@ -1,0 +1,45 @@
+{
+  "name": "backend-todo",
+  "version": "1.0.0",
+  "description": "Backend for Todo application",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "docker:build": "docker build -t todo-app-backend .",
+    "docker:run": "docker run -p 3000:3000 todo-app-backend",
+    "aws:deploy": "serverless deploy",
+    "aws:remove": "serverless remove"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.8.2",
+    "@hono/swagger-ui": "^0.5.2",
+    "@hono/zod-openapi": "^0.19.8",
+    "@hono/zod-validator": "^0.7.0",
+    "@prisma/client": "^5.10.2",
+    "bcryptjs": "^2.4.3",
+    "hono": "^4.0.5",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-ssm": "^3.828.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20.11.19",
+    "@vitest/coverage-v8": "^1.2.2",
+    "bun-types": "^1.2.16",
+    "prisma": "^5.10.2",
+    "serverless": "^3.40.0",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.2"
+  }
+}

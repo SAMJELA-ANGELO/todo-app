@@ -14,7 +14,6 @@ import { openApiConfig } from './config/openapi';
 
 export const app = new OpenAPIHono();
 
-// Middleware
 app.use('*', logger());
 app.use('*', prettyJSON());
 app.use('*', cors({
@@ -26,23 +25,13 @@ app.use('*', cors({
   credentials: true,
 }));
 app.use('/api/*', errorHandler);
-
-// API Documentation
 app.doc('/api-docs', openApiConfig);
 app.get('/swagger', swaggerUI({ url: '/api-docs' }));
-
-// Public routes
 app.route('/api/auth', auth);
-
-// Protected routes
 app.use('/api/*', authMiddleware);
 app.route('/api/todos', todos);
 app.route('/api/categories', categories);
-
-// Health check
 app.get('/health', (c) => c.json({ status: 'ok' }));
-
-// Start server
 const port = process.env.PORT || 3000;
 console.log(`Server is running on port ${port}`);
 

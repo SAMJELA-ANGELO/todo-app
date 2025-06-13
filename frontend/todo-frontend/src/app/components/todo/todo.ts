@@ -22,7 +22,8 @@ import { CategoryDialogComponent } from './category-dialog';
 import { EditTodoDialogComponent } from './edit-todo-dialog';
 import { CategoryService, Category } from '../../services/category.service';
 import { TodoService, Todo } from '../../services/todo.service';
-import { Subscription } from 'rxjs';
+import { Subscription, combineLatest } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-todo',
@@ -76,11 +77,20 @@ export class TodoComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadCategories();
-    this.loadTodos();
+    this.setupTodoSubscription();
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+  }
+
+  private setupTodoSubscription() {
+    this.subscription.add(
+      this.todoService.todos$.subscribe(todos => {
+        this.todos = todos;
+        this.applyFilters();
+      })
+    );
   }
 
   loadCategories() {
@@ -100,36 +110,8 @@ export class TodoComponent implements OnInit, OnDestroy {
     );
   }
 
-  loadTodos() {
-    this.isLoading = true;
-    this.subscription.add(
-      this.todoService.getTodos().subscribe({
-        next: (todos) => {
-          this.todos = todos;
-          this.applyFilters();
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Error loading todos:', error);
-          this.snackBar.open('Error loading todos', 'Close', { duration: 3000 });
-          this.isLoading = false;
-        }
-      })
-    );
-  }
-
   addTodo() {
-    console.log('Add Todo clicked');
-    console.log('Form values:', {
-      title: this.newTodoTitle,
-      description: this.newTodoDescription,
-      priority: this.newTodoPriority,
-      dueDate: this.newTodoDueDate,
-      categoryId: this.newTodoCategoryId
-    });
-
     if (!this.newTodoTitle.trim()) {
-      console.log('Title is empty, returning');
       return;
     }
 
@@ -142,14 +124,9 @@ export class TodoComponent implements OnInit, OnDestroy {
       categoryId: this.newTodoCategoryId
     };
 
-    console.log('Sending todo to server:', newTodo);
-
     this.subscription.add(
       this.todoService.createTodo(newTodo).subscribe({
-        next: (todo) => {
-          console.log('Todo created successfully:', todo);
-          this.todos.unshift(todo);
-          this.applyFilters();
+        next: () => {
           this.resetForm();
           this.snackBar.open('Todo created successfully', 'Close', { duration: 3000 });
         },
@@ -165,13 +142,6 @@ export class TodoComponent implements OnInit, OnDestroy {
     const updatedStatus = todo.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
     this.subscription.add(
       this.todoService.updateTodo(todo.id, { status: updatedStatus }).subscribe({
-        next: (updatedTodo) => {
-          const index = this.todos.findIndex(t => t.id === todo.id);
-          if (index !== -1) {
-            this.todos[index] = updatedTodo;
-            this.applyFilters();
-          }
-        },
         error: (error) => {
           console.error('Error updating todo status:', error);
           this.snackBar.open('Error updating todo status', 'Close', { duration: 3000 });
@@ -183,11 +153,6 @@ export class TodoComponent implements OnInit, OnDestroy {
   deleteTodo(todo: Todo) {
     this.subscription.add(
       this.todoService.deleteTodo(todo.id).subscribe({
-        next: () => {
-          this.todos = this.todos.filter(t => t.id !== todo.id);
-          this.applyFilters();
-          this.snackBar.open('Todo deleted successfully', 'Close', { duration: 3000 });
-        },
         error: (error) => {
           console.error('Error deleting todo:', error);
           this.snackBar.open('Error deleting todo', 'Close', { duration: 3000 });
@@ -254,7 +219,7 @@ export class TodoComponent implements OnInit, OnDestroy {
     );
   }
 
-  editTodo(todo: Todo) {
+  openEditTodoDialog(todo: Todo) {
     const dialogRef = this.dialog.open(EditTodoDialogComponent, {
       data: { todo, categories: this.categories }
     });
@@ -262,20 +227,7 @@ export class TodoComponent implements OnInit, OnDestroy {
     this.subscription.add(
       dialogRef.afterClosed().subscribe(result => {
         if (result) {
-          this.todoService.updateTodo(todo.id, result).subscribe({
-            next: (updatedTodo) => {
-              const index = this.todos.findIndex(t => t.id === todo.id);
-              if (index !== -1) {
-                this.todos[index] = updatedTodo;
-                this.applyFilters();
-                this.snackBar.open('Todo updated successfully', 'Close', { duration: 3000 });
-              }
-            },
-            error: (error) => {
-              console.error('Error updating todo:', error);
-              this.snackBar.open('Error updating todo', 'Close', { duration: 3000 });
-            }
-          });
+          this.todoService.loadTodos();
         }
       })
     );

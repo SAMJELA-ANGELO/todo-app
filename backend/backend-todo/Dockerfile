@@ -1,5 +1,5 @@
 # Use Node.js LTS version
-FROM node:20-slim
+FROM node:18-alpine
 
 # create app directory
 

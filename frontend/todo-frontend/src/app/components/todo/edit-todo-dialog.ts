@@ -8,22 +8,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-
-interface Todo {
-  id: number;
-  title: string;
-  description?: string;
-  priority: 'HIGH' | 'MEDIUM' | 'LOW';
-  dueDate?: Date;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
-  category?: string;
-}
-
-interface Category {
-  id: number;
-  name: string;
-  color: string;
-}
+import { Todo } from '../../services/todo.service';
+import { Category } from '../../services/category.service';
 
 @Component({
   selector: 'app-edit-todo-dialog',
@@ -94,9 +80,9 @@ interface Category {
 
             <mat-form-field>
               <mat-label>Category</mat-label>
-              <mat-select [(ngModel)]="editedTodo.category" name="category">
+              <mat-select [(ngModel)]="editedTodo.categoryId" name="category">
                 <mat-option value="">None</mat-option>
-                <mat-option *ngFor="let category of categories" [value]="category.name">
+                <mat-option *ngFor="let category of categories" [value]="category.id">
                   {{ category.name }}
                 </mat-option>
               </mat-select>
@@ -169,7 +155,7 @@ interface Category {
   `]
 })
 export class EditTodoDialogComponent {
-  editedTodo: Todo;
+  editedTodo: Partial<Todo>;
   categories: Category[];
 
   constructor(

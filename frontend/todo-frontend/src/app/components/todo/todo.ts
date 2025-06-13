@@ -21,17 +21,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { CategoryDialogComponent } from './category-dialog';
 import { EditTodoDialogComponent } from './edit-todo-dialog';
 import { CategoryService, Category } from '../../services/category.service';
+import { TodoService, Todo } from '../../services/todo.service';
 import { Subscription } from 'rxjs';
-
-interface Todo {
-  id: number;
-  title: string;
-  description?: string;
-  priority: 'HIGH' | 'MEDIUM' | 'LOW';
-  dueDate?: Date;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
-  category?: string;
-}
 
 @Component({
   selector: 'app-todo',
@@ -68,7 +59,7 @@ export class TodoComponent implements OnInit, OnDestroy {
   newTodoDescription = '';
   newTodoPriority: 'HIGH' | 'MEDIUM' | 'LOW' = 'MEDIUM';
   newTodoDueDate?: Date;
-  newTodoCategory?: string;
+  newTodoCategoryId?: string;
   searchQuery = '';
   statusFilter: 'ALL' | 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' = 'ALL';
   priorityFilter: 'ALL' | 'HIGH' | 'MEDIUM' | 'LOW' = 'ALL';
@@ -79,11 +70,13 @@ export class TodoComponent implements OnInit, OnDestroy {
   constructor(
     private dialog: MatDialog,
     private categoryService: CategoryService,
+    private todoService: TodoService,
     private snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
     this.loadCategories();
+    this.loadTodos();
   }
 
   ngOnDestroy() {
@@ -97,7 +90,6 @@ export class TodoComponent implements OnInit, OnDestroy {
         next: (categories) => {
           this.categories = categories;
           this.isLoading = false;
-          this.applyFilters();
         },
         error: (error) => {
           console.error('Error loading categories:', error);
@@ -108,32 +100,100 @@ export class TodoComponent implements OnInit, OnDestroy {
     );
   }
 
-  addTodo() {
-    if (!this.newTodoTitle.trim()) return;
+  loadTodos() {
+    this.isLoading = true;
+    this.subscription.add(
+      this.todoService.getTodos().subscribe({
+        next: (todos) => {
+          this.todos = todos;
+          this.applyFilters();
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading todos:', error);
+          this.snackBar.open('Error loading todos', 'Close', { duration: 3000 });
+          this.isLoading = false;
+        }
+      })
+    );
+  }
 
-    const newTodo: Todo = {
-      id: this.todos.length + 1,
+  addTodo() {
+    console.log('Add Todo clicked');
+    console.log('Form values:', {
       title: this.newTodoTitle,
       description: this.newTodoDescription,
       priority: this.newTodoPriority,
       dueDate: this.newTodoDueDate,
-      status: 'PENDING',
-      category: this.newTodoCategory
+      categoryId: this.newTodoCategoryId
+    });
+
+    if (!this.newTodoTitle.trim()) {
+      console.log('Title is empty, returning');
+      return;
+    }
+
+    const newTodo = {
+      title: this.newTodoTitle,
+      description: this.newTodoDescription,
+      priority: this.newTodoPriority,
+      dueDate: this.newTodoDueDate,
+      status: 'PENDING' as const,
+      categoryId: this.newTodoCategoryId
     };
 
-    this.todos.unshift(newTodo);
-    this.applyFilters();
-    this.resetForm();
+    console.log('Sending todo to server:', newTodo);
+
+    this.subscription.add(
+      this.todoService.createTodo(newTodo).subscribe({
+        next: (todo) => {
+          console.log('Todo created successfully:', todo);
+          this.todos.unshift(todo);
+          this.applyFilters();
+          this.resetForm();
+          this.snackBar.open('Todo created successfully', 'Close', { duration: 3000 });
+        },
+        error: (error) => {
+          console.error('Error creating todo:', error);
+          this.snackBar.open('Error creating todo', 'Close', { duration: 3000 });
+        }
+      })
+    );
   }
 
   toggleTodoStatus(todo: Todo) {
-    todo.status = todo.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
-    this.applyFilters();
+    const updatedStatus = todo.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
+    this.subscription.add(
+      this.todoService.updateTodo(todo.id, { status: updatedStatus }).subscribe({
+        next: (updatedTodo) => {
+          const index = this.todos.findIndex(t => t.id === todo.id);
+          if (index !== -1) {
+            this.todos[index] = updatedTodo;
+            this.applyFilters();
+          }
+        },
+        error: (error) => {
+          console.error('Error updating todo status:', error);
+          this.snackBar.open('Error updating todo status', 'Close', { duration: 3000 });
+        }
+      })
+    );
   }
 
   deleteTodo(todo: Todo) {
-    this.todos = this.todos.filter(t => t.id !== todo.id);
-    this.applyFilters();
+    this.subscription.add(
+      this.todoService.deleteTodo(todo.id).subscribe({
+        next: () => {
+          this.todos = this.todos.filter(t => t.id !== todo.id);
+          this.applyFilters();
+          this.snackBar.open('Todo deleted successfully', 'Close', { duration: 3000 });
+        },
+        error: (error) => {
+          console.error('Error deleting todo:', error);
+          this.snackBar.open('Error deleting todo', 'Close', { duration: 3000 });
+        }
+      })
+    );
   }
 
   applyFilters() {
@@ -142,7 +202,7 @@ export class TodoComponent implements OnInit, OnDestroy {
                           todo.description?.toLowerCase().includes(this.searchQuery.toLowerCase());
       const matchesStatus = this.statusFilter === 'ALL' || todo.status === this.statusFilter;
       const matchesPriority = this.priorityFilter === 'ALL' || todo.priority === this.priorityFilter;
-      const matchesCategory = this.categoryFilter === 'ALL' || todo.category === this.categoryFilter;
+      const matchesCategory = this.categoryFilter === 'ALL' || todo.categoryId === this.categoryFilter;
 
       return matchesSearch && matchesStatus && matchesPriority && matchesCategory;
     });
@@ -166,8 +226,9 @@ export class TodoComponent implements OnInit, OnDestroy {
     }
   }
 
-  getCategoryColor(categoryName: string): string {
-    const category = this.categories.find(c => c.name === categoryName);
+  getCategoryColor(categoryId: string | undefined): string {
+    if (!categoryId) return '#9e9e9e';
+    const category = this.categories.find(c => c.id === categoryId);
     return category?.color || '#9e9e9e';
   }
 
@@ -176,7 +237,7 @@ export class TodoComponent implements OnInit, OnDestroy {
     this.newTodoDescription = '';
     this.newTodoPriority = 'MEDIUM';
     this.newTodoDueDate = undefined;
-    this.newTodoCategory = undefined;
+    this.newTodoCategoryId = undefined;
   }
 
   openCategoryDialog() {
@@ -198,14 +259,25 @@ export class TodoComponent implements OnInit, OnDestroy {
       data: { todo, categories: this.categories }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        const index = this.todos.findIndex(t => t.id === result.id);
-        if (index !== -1) {
-          this.todos[index] = result;
-          this.applyFilters();
+    this.subscription.add(
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.todoService.updateTodo(todo.id, result).subscribe({
+            next: (updatedTodo) => {
+              const index = this.todos.findIndex(t => t.id === todo.id);
+              if (index !== -1) {
+                this.todos[index] = updatedTodo;
+                this.applyFilters();
+                this.snackBar.open('Todo updated successfully', 'Close', { duration: 3000 });
+              }
+            },
+            error: (error) => {
+              console.error('Error updating todo:', error);
+              this.snackBar.open('Error updating todo', 'Close', { duration: 3000 });
+            }
+          });
         }
-      }
-    });
+      })
+    );
   }
 }

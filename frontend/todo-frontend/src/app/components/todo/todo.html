@@ -40,9 +40,9 @@
 
           <mat-form-field>
             <mat-label>Category</mat-label>
-            <mat-select [(ngModel)]="newTodoCategory" name="category">
-              <mat-option value="">None</mat-option>
-              <mat-option *ngFor="let category of categories" [value]="category.name">
+            <mat-select [(ngModel)]="newTodoCategoryId" name="categoryId">
+              <mat-option [value]="undefined">None</mat-option>
+              <mat-option *ngFor="let category of categories" [value]="category.id">
                 {{ category.name }}
               </mat-option>
             </mat-select>
@@ -96,7 +96,7 @@
           <mat-label>Category</mat-label>
           <mat-select [(ngModel)]="categoryFilter" (ngModelChange)="applyFilters()">
             <mat-option value="ALL">All</mat-option>
-            <mat-option *ngFor="let category of categories" [value]="category.name">
+            <mat-option *ngFor="let category of categories" [value]="category.id">
               {{ category.name }}
             </mat-option>
           </mat-select>
@@ -144,8 +144,8 @@
                 <mat-chip [style.background-color]="getStatusColor(todo.status)">
                   {{ todo.status }}
                 </mat-chip>
-                <mat-chip *ngIf="todo.category" [style.background-color]="getCategoryColor(todo.category)">
-                  {{ todo.category }}
+                <mat-chip *ngIf="todo.categoryId" [style.background-color]="getCategoryColor(todo.categoryId)">
+                  {{ todo.category?.name }}
                 </mat-chip>
               </mat-chip-set>
               <span class="due-date" *ngIf="todo.dueDate">

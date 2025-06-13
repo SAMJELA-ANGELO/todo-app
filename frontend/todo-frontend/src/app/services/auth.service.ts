@@ -37,7 +37,6 @@ export class AuthService {
     private http: HttpClient,
     private router: Router
   ) {
-    // Only access localStorage in browser environment
     if (isPlatformBrowser(this.platformId)) {
       const storedUser = localStorage.getItem('currentUser');
       if (storedUser) {

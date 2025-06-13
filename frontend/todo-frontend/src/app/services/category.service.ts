@@ -5,7 +5,7 @@ import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
 export interface Category {
-  id: number;
+  id: string;
   name: string;
   color: string;
 }
@@ -37,11 +37,11 @@ export class CategoryService {
     return this.http.post<Category>(this.apiUrl, category, { headers: this.getHeaders() });
   }
 
-  updateCategory(id: number, category: Partial<Category>): Observable<Category> {
+  updateCategory(id: string, category: Partial<Category>): Observable<Category> {
     return this.http.put<Category>(`${this.apiUrl}/${id}`, category, { headers: this.getHeaders() });
   }
 
-  deleteCategory(id: number): Observable<void> {
+  deleteCategory(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
 }

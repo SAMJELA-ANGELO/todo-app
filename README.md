@@ -51,7 +51,7 @@ A full stack Todo project done with Angular (Frontend) and Nodejs/Hono (Backend)
    - Backend API: http://localhost:3000
    - MongoDB: localhost:27017
    - API Documentation: http://localhost:3000/swagger
-   - Firebase Hosted Frontend: https://geloshopping-fb.web.app/
+   - Firebase Hosted Frontend: https://geloshopping-fb.web.app/login
 
 
 ## Local Development Setup
@@ -223,7 +223,7 @@ The frontend application will be available at `http://localhost:4200`
    ![Todo_dashboard_page](images/todo.png)
 
 ### Image of category 
-    ![Todo_dashboard_page](images/cat.png)
+    ![Todo_Cart_page](images/cat.png)
 
 
 ## License

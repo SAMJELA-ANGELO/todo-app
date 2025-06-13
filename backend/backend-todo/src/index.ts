@@ -17,7 +17,7 @@ export const app = new OpenAPIHono();
 app.use('*', logger());
 app.use('*', prettyJSON());
 app.use('*', cors({
-  origin: ['http://localhost:42000'],
+  origin: ['http://localhost:42000','https://geloshopping-fb.web.app/'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
   exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],

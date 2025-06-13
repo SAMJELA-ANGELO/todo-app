@@ -213,6 +213,18 @@ The frontend application will be available at `http://localhost:4200`
    - Filter by priority (All, High, Medium, Low)
    - Filter by category
 
+## Images of the Application
+### Authentication forms
+![Todo_login_page](images/login.png)
+![Todo_register_page](images/signup.png)
+
+### Image of Todo dashbord
+   ![Todo_dashboard_page](images/todo.png)
+
+### Image of category 
+    ![Todo_dashboard_page](images/cat.png)
+
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details. 

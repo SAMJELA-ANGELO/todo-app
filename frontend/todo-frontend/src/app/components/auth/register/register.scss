@@ -1,0 +1,66 @@
+body, :host {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1.5px 6px rgba(0,0,0,0.08);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.auth-card h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #3f51b5;
+}
+
+.full-width {
+  width: 100%;
+}
+
+button.full-width {
+  margin-top: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  position: relative;
+  min-height: 36px;
+}
+
+.error-message {
+  color: #f44336;
+  font-size: 14px;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.spinner {
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+button[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .auth-card {
+    padding: 1rem 0.5rem;
+    max-width: 95vw;
+  }
+}

@@ -1,0 +1,172 @@
+<div class="todo-container">
+  <!-- Add Todo Form -->
+  <mat-card class="add-todo-card">
+    <mat-card-header>
+      <mat-card-title>Add New Todo</mat-card-title>
+      <mat-card-subtitle>Create a new task to track</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <form (ngSubmit)="addTodo()" class="add-todo-form">
+        <div class="form-row">
+          <mat-form-field class="title-field">
+            <mat-label>What needs to be done?</mat-label>
+            <input matInput [(ngModel)]="newTodoTitle" name="title" placeholder="Enter todo title" required>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field class="description-field">
+            <mat-label>Description</mat-label>
+            <textarea matInput [(ngModel)]="newTodoDescription" name="description" placeholder="Enter description (optional)"></textarea>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field>
+            <mat-label>Priority</mat-label>
+            <mat-select [(ngModel)]="newTodoPriority" name="priority">
+              <mat-option value="HIGH">High</mat-option>
+              <mat-option value="MEDIUM">Medium</mat-option>
+              <mat-option value="LOW">Low</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field>
+            <mat-label>Due Date</mat-label>
+            <input matInput [matDatepicker]="picker" [(ngModel)]="newTodoDueDate" name="dueDate">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field>
+            <mat-label>Category</mat-label>
+            <mat-select [(ngModel)]="newTodoCategory" name="category">
+              <mat-option value="">None</mat-option>
+              <mat-option *ngFor="let category of categories" [value]="category.name">
+                {{ category.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" type="submit">
+            <mat-icon>add</mat-icon>
+            Add Todo
+          </button>
+
+          <button mat-raised-button color="accent" (click)="openCategoryDialog()">
+            <mat-icon>category</mat-icon>
+            Manage Categories
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Filters -->
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <div class="filters-row">
+        <mat-form-field class="search-field">
+          <mat-label>Search</mat-label>
+          <input matInput [(ngModel)]="searchQuery" (ngModelChange)="applyFilters()" placeholder="Search todos...">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="statusFilter" (ngModelChange)="applyFilters()">
+            <mat-option value="ALL">All</mat-option>
+            <mat-option value="PENDING">Pending</mat-option>
+            <mat-option value="IN_PROGRESS">In Progress</mat-option>
+            <mat-option value="COMPLETED">Completed</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Priority</mat-label>
+          <mat-select [(ngModel)]="priorityFilter" (ngModelChange)="applyFilters()">
+            <mat-option value="ALL">All</mat-option>
+            <mat-option value="HIGH">High</mat-option>
+            <mat-option value="MEDIUM">Medium</mat-option>
+            <mat-option value="LOW">Low</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Category</mat-label>
+          <mat-select [(ngModel)]="categoryFilter" (ngModelChange)="applyFilters()">
+            <mat-option value="ALL">All</mat-option>
+            <mat-option *ngFor="let category of categories" [value]="category.name">
+              {{ category.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Todo List -->
+  <mat-card class="todo-list-card">
+    <mat-card-content>
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-spinner">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+
+      <!-- Todo List -->
+      <div *ngIf="!isLoading && filteredTodos.length > 0" class="todo-list">
+        <div *ngFor="let todo of filteredTodos" class="todo-item">
+          <div class="todo-content" [class.completed]="todo.status === 'COMPLETED'">
+            <div class="todo-header">
+              <h3>{{ todo.title }}</h3>
+              <button mat-icon-button [matMenuTriggerFor]="menu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="editTodo(todo)">
+                  <mat-icon>edit</mat-icon>
+                  <span>Edit</span>
+                </button>
+                <button mat-menu-item (click)="deleteTodo(todo)">
+                  <mat-icon>delete</mat-icon>
+                  <span>Delete</span>
+                </button>
+              </mat-menu>
+            </div>
+
+            <p class="todo-description" *ngIf="todo.description">{{ todo.description }}</p>
+
+            <div class="todo-meta">
+              <mat-chip-set>
+                <mat-chip [style.background-color]="getPriorityColor(todo.priority)">
+                  {{ todo.priority }}
+                </mat-chip>
+                <mat-chip [style.background-color]="getStatusColor(todo.status)">
+                  {{ todo.status }}
+                </mat-chip>
+                <mat-chip *ngIf="todo.category" [style.background-color]="getCategoryColor(todo.category)">
+                  {{ todo.category }}
+                </mat-chip>
+              </mat-chip-set>
+              <span class="due-date" *ngIf="todo.dueDate">
+                Due: {{ todo.dueDate | date:'mediumDate' }}
+              </span>
+            </div>
+          </div>
+
+          <mat-checkbox
+            [checked]="todo.status === 'COMPLETED'"
+            (change)="toggleTodoStatus(todo)"
+            color="primary">
+          </mat-checkbox>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && filteredTodos.length === 0" class="empty-state">
+        <mat-icon>assignment</mat-icon>
+        <p>No todos found</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "todo-frontend": {
+    "test-app": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -64,10 +64,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "todo-frontend:build:production"
+              "buildTarget": "test-app:build:production"
             },
             "development": {
-              "buildTarget": "todo-frontend:build:development"
+              "buildTarget": "test-app:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -96,6 +96,6 @@
     }
   },
   "cli": {
-    "analytics": false
+    "analytics": "63eb2db0-3690-4b4b-892d-4e21286d98e0"
   }
 }

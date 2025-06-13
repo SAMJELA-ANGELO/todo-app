@@ -1,0 +1,37 @@
+<div class="auth-container">
+  <mat-card class="auth-card">
+    <h2>Login</h2>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" type="email" required>
+         <mat-error *ngIf="loginForm.get('email')?.hasError('required')">Email is required</mat-error>
+         <mat-error *ngIf="loginForm.get('email')?.hasError('email')">Enter a valid email</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Password</mat-label>
+        <input matInput formControlName="password" type="password" required>
+        <mat-error *ngIf="loginForm.get('password')?.hasError('required')">Password is required</mat-error>
+        <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">Password must be at least 6 characters</mat-error>
+      </mat-form-field>
+
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <button mat-raised-button color="primary" class="full-width" type="submit" [disabled]="!loginForm.valid">
+        <mat-spinner diameter="20" *ngIf="isLoading" class="spinner"></mat-spinner>
+        <span *ngIf="!isLoading">Login</span>
+      </button>
+
+    </form>
+
+    <button mat-button color="accent" class="full-width switch-btn" routerLink="/register">
+      Don't have an account? Register
+    </button>
+
+  </mat-card>
+
+</div>
